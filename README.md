@@ -34,3 +34,4 @@ Cocok untuk kamu yang:
 -Kebanyakan uang
 -Males ngerjain sispeng 
 -Pengen cepet cepet fokus ujian
+![WhatsApp Image 2025-06-07 at 00 00 16_1ebed8cf](https://github.com/user-attachments/assets/f6ce0b2e-307a-4972-8ad2-fae7a2ec3254)
