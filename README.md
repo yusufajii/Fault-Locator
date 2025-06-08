@@ -2,7 +2,7 @@
 
 Smart cable fault locator using Wheatstone bridge principle with modern automation.  
 
-Key Features :
+Key Features :  
 ✅ Autonomous fault distance calculation  
 ✅ 1Ω shunt precise INA219 Current Sensor  
 ✅ ESP32 + OLED 0.96" for real-time display  
@@ -22,8 +22,9 @@ Output : Bridge current (0A target), R_Var, fault distance
   
 Performance (Lab Tested) :  
 -Tested with 300m cable  
--Error margin: 0–10% (artinya misal aslinya fault 100meter cuma keukur 91-112 meter)  
--Sensitiviras : 0.2  
+-Accuracy : 0.1 m  
+-Error margin: 0–10% 
+-Sensitivity : 0.2  
 -Distance offset: ±7m meters  
 -Resistance offset: ±200Ω  
 
