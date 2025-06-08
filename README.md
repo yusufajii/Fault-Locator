@@ -29,3 +29,4 @@ Performance (Lab Tested) :
 -Resistance offset: ±200Ω  
 
 ![WhatsApp Image 2025-06-07 at 00 00 16_1ebed8cf](https://github.com/user-attachments/assets/f6ce0b2e-307a-4972-8ad2-fae7a2ec3254)
+![image](https://github.com/user-attachments/assets/3e8a333b-037c-4e74-8149-5c72a6591873)
