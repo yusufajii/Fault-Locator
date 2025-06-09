@@ -14,12 +14,16 @@
 #include <ArduinoJson.h>
 #include <WiFiClientSecure.h>
 
-const char* ssid = "La belle Ucup's";
-const char* password = "thelovelyucup";
+const char* ssid2 = "La belle Ucup's";
+const char* password2 = "thelovelyucup";
+const char* ssid1 = "laras";
+const char* password1 = "qwertyuiop";
 const char* scriptURL = "https://script.google.com/macros/s/AKfycbwosf8tYSlJzCFmv3odfdeevN1cSsr4fyg3gdRUL8GeZu-9vRPVYRtte6bwU5wFwnkLXA/exec";
 
 float cal_m = 1.0;
 float cal_c = 0.0;
+float cal_m2 = 1.0;
+float cal_c2 = 0.0;
 
 int state = 1;
 unsigned long loopCounter = 0;
@@ -103,25 +107,57 @@ void setup() {
   display.setTextSize(1);
   display.setTextColor(SSD1306_WHITE);
 
+  // Initalization Wifi Connectivity
+
   Serial.println();
   Serial.println("[INIT] Connecting to WiFi...");
-  Serial.print("       SSID: ");
-  Serial.println(ssid);
-  
-  WiFi.begin(ssid, password);
+
+  bool connected = false;
+
+  // Coba SSID pertama
+  Serial.print("       SSID 1: ");
+  Serial.println(ssid1);
+  WiFi.begin(ssid1, password1);
   Serial.print("       Connection status: ");
-  while (WiFi.status() != WL_CONNECTED) {
+  for (int i = 0; i < 50; i++) {  // max 5 detik
+    if (WiFi.status() == WL_CONNECTED) {
+      connected = true;
+      break;
+    }
     delay(100);
     Serial.print(".");
   }
   Serial.println();
-  Serial.println("[OK] WiFi connected successfully");
-  Serial.print("     IP Address: ");
-  Serial.println(WiFi.localIP());
 
-  Serial.println();
-  Serial.println("[INIT] Fetching calibration parameters...");
-  fetchCalibration();
+  // Jika SSID pertama gagal, coba SSID kedua
+  if (!connected) {
+    Serial.print("       SSID 2: ");
+    Serial.println(ssid2);
+    WiFi.begin(ssid2, password2);
+    Serial.print("       Connection status: ");
+    for (int i = 0; i < 50; i++) {  // max 5 detik
+      if (WiFi.status() == WL_CONNECTED) {
+        connected = true;
+        break;
+      }
+      delay(100);
+      Serial.print(".");
+    }
+    Serial.println();
+  }
+
+  if (connected) {
+    Serial.println("[OK] WiFi connected successfully");
+    Serial.print("     IP Address: ");
+    Serial.println(WiFi.localIP());
+
+    Serial.println();
+    Serial.println("[INIT] Fetching calibration parameters...");
+    fetchCalibration();
+  } else {
+    Serial.println("[ERROR] Failed to connect to any WiFi network.");
+    // fetchCalibration() tidak dipanggil
+  }
 
   printSeparator('=', 70);
   Serial.println("           SYSTEM READY - STARTING MAIN LOOP");
@@ -205,6 +241,7 @@ void displayFault(float current_mA, float v_bat, float R_ref, float cableLength)
   float R_var = v_bat * 1000 / current_A;
   float R_var_c = R_var * cal_m + cal_c;
   float s = (R_var_c / (R_ref + R_var_c)) * 2.0 * cableLength;
+  float s_c = s * cal_m2 + cal_c2;
 
   // Professional serial output for fault analysis
   Serial.println();
@@ -219,16 +256,20 @@ void displayFault(float current_mA, float v_bat, float R_ref, float cableLength)
   Serial.printf("  Measured Current : %8.2f mA\n", current_mA);
   
   Serial.println();
-  Serial.println("CALIBRATION DATA:");
+  Serial.println("RVar CALIBRATION DATA:");
   Serial.printf("  Cal. Multiplier  : %8.3f\n", (float)cal_m);
   Serial.printf("  Cal. Offset      : %8.3f\n", (float)cal_c);
-  
+  Serial.println("Fault CALIBRATION DATA:");
+  Serial.printf("  Cal. Multiplier  : %8.3f\n", (float)cal_m2);
+  Serial.printf("  Cal. Offset      : %8.3f\n", (float)cal_c2);
+
+
   Serial.println();
   Serial.println("CALCULATED VALUES:");
   Serial.printf("  Variable Resist. : %8.2f Ohm\n", R_var);
   Serial.printf("  Calibrated R_var : %8.2f Ohm\n", R_var_c);
-  Serial.printf("  Fault Distance   : %8.2f m\n", s);
-  Serial.printf("  Fault Percentage : %8.1f%%\n", (s/cableLength)*100);
+  Serial.printf("  Fault Distance   : %8.2f m\n", s_c);
+  Serial.printf("  Fault Percentage : %8.1f%%\n", (s_c/cableLength)*100);
   
   printSubSeparator('*', 50);
 
@@ -264,7 +305,7 @@ void displayFault(float current_mA, float v_bat, float R_ref, float cableLength)
   // Lokasi Fault (besar) + rasio
   display.setTextSize(2);
   display.setCursor(4, 48);
-  display.print(s, 1);
+  display.print(s_c, 1);
   display.setTextSize(1);
   display.setCursor(75, 56);
   display.print("/");
@@ -297,8 +338,11 @@ void fetchCalibration() {
     if (!error) {
       cal_m = doc["m"];
       cal_c = doc["c"];
+      cal_m2 = doc["m2"];
+      cal_c2 = doc["c2"];
       cable_length = doc["dis"];
       v_bat = doc["vbat"];
+
 
       Serial.println("[OK] Calibration parameters updated:");
       Serial.printf("      Multiplier (m): %.6f\n", (float)cal_m);
